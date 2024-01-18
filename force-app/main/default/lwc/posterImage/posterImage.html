@@ -1,0 +1,11 @@
+<template>
+    <lightning-carousel>
+        <template for:each={moviePosters} for:item="poster">
+            <lightning-carousel-image
+                key={poster.Id}
+                src={poster.PosterUrl__c}
+                header={poster.Name}>
+            </lightning-carousel-image>
+        </template>
+    </lightning-carousel>
+</template>

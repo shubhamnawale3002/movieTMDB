@@ -1,0 +1,11 @@
+<template>
+    <lightning-card title="JSON File Uploader">
+        <lightning-input type="file" label="Select JSON File" onchange={handleFileChange}></lightning-input>
+        <template if:true={jsonContent}>
+            <div>
+                <h2>Uploaded JSON Content:</h2>
+                <pre>{jsonContent}</pre>
+            </div>
+        </template>
+    </lightning-card>
+</template>
