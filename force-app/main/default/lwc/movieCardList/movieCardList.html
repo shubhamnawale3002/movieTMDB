@@ -1,0 +1,69 @@
+<template>
+    <lightning-card>
+        <div>
+            <lightning-accordion allow-multiple-sections-open>
+                <!-- <lightning-accordion-section name="genresSection" label="Filter By Genres">
+                    <div class="slds-grid slds-wrap">
+                        <div>
+                            <lightning-checkbox-group
+                            options={genrePicklistvalues}
+                            value={value} onchange={handleGenreChange}></lightning-checkbox-group>
+                        </div>
+                        <div>
+                            <lightning-radio-group
+                            label="Condition"
+                            options={conditionOptions}
+                            value={value}
+                            type="radio"></lightning-radio-group>
+                        </div>
+                    </div>
+                </lightning-accordion-section> -->
+                <lightning-accordion-section name="decadeSection" label="Filter By Decade">
+                    <lightning-combobox
+                    value={selectedDecade}
+                    class="statuscombobox"
+                    placeholder="Select Decade"
+                    options={generateDecadeOptions}
+                    onchange={handleDecadeChange}></lightning-combobox>
+               
+                </lightning-accordion-section>
+            </lightning-accordion>
+        </div>
+        <div>
+            <lightning-record-picker
+                label="Search Movies"
+                placeholder="Search Movies..."
+                object-api-name="Movies__c"
+                display-info={displayInfo}
+                matching-info={matchingInfo}
+                value = {selectedMovieId}
+                onchange={handleMovieSelect}
+            ></lightning-record-picker>
+            <template if:true={selectedMovie}>
+                <div class="slds-text-align_center">
+                    <img src={selectedMovie.PosterPath__c} class="slds-align_absolute-center" style="max-width: 200%; max-height: 300px;" />
+                    <p><span>Release Date: </span> {selectedMovie.Release_del__c}</p>
+                    <p><span>Genres: </span> {selectedMovie.Genre__c}</p>
+                    <p><span>Tag Line: </span> {selectedMovie.Tag_line__c}</p>
+                    <p><span>Overview : </span> {selectedMovie.Over_View__c}</p>
+                </div>
+            </template>
+            <template if:false={selectedMovie}>
+                <div class="slds-grid slds-wrap">
+                    <template for:each={data} for:item="eachItem" >
+                        <div key={eachItem.Id}  class="slds-size_1-of-4 slds-p-around_x-small">
+                            <div class="slds-box slds-text-align_center">
+                                <lightning-carousel-image
+                                    src={eachItem.PosterPath__c}
+                                    header={eachItem.Name}
+                                    description={eachItem.Release_del__c}>
+                                </lightning-carousel-image>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+       
+    </lightning-card>
+</template>

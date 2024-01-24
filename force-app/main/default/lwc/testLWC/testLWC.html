@@ -1,0 +1,102 @@
+<template>
+    <lightning-card title="The Movie DataBase">
+    <div class="slds-grid slds-gutters">
+        <div class="slds-col">
+            <lightning-accordion allow-multiple-sections-open>
+                <lightning-accordion-section name="genresSection" label="Filter By Genres">
+                </lightning-accordion-section>
+                <lightning-accordion-section name="decadeSection" label="Filter By Decade">
+                <lightning-combobox
+                    
+                    value={selectedDecade}
+                    class="statuscombobox"
+                    placeholder="Select Decade"
+                    options={generateDecadeOptions}
+                    onchange={handleDecadeChange}>
+                </lightning-combobox>
+            </lightning-accordion-section>
+        </lightning-accordion>
+        </div>
+        <div class="slds-col">
+        </div>
+        <div class="slds-col">
+           
+        </div>
+        <div class="slds-col">
+        </div>
+        <div class="slds-col slds-grid slds-align_absolute-left" style="height:5rem">
+            <template if:false={isChecked}>
+                <lightning-record-picker
+                    label="Search"
+                    placeholder="Search..."
+                    object-api-name="Movie__c"
+                    onchange={handleSelectedRecord}
+                    message-when-bad-input="Select a Movie"
+                    value={selectedMovieId}>
+                </lightning-record-picker>
+            </template>
+            <template if:true={isChecked}>
+                <lightning-record-picker
+                    label="Search"
+                    placeholder="Search..."
+                    object-api-name="Actor__c"
+                    onchange={handleSelectedRecord}
+                    message-when-bad-input="Select an Actor"
+                    value={selectedActorId}>
+                </lightning-record-picker>
+            </template>
+        </div>
+    </div>
+    <div class="slds-grid slds-gutters">
+        <div class="slds-col">
+        </div>
+        <div class="slds-col">
+        </div>
+        <div class="slds-col">
+        </div>
+        <div class="slds-col">
+            <label class="slds-checkbox_toggle slds-grid">
+                <input type="checkbox" name="checkbox" id="toggle" onchange={handleToggle} checked={isChecked} />
+                <span class="slds-checkbox_faux_container" aria-live="assertive">
+                    <span class="slds-checkbox_faux"></span>
+                    <span class="slds-checkbox_on">Actor</span>
+                    <span class="slds-checkbox_off">Movie</span>
+                </span>
+            </label>
+        </div>
+    </div>
+</lightning-card>
+
+    <template if:true={movieSelected}>
+        <div class="slds-grid slds-wrap">
+            
+                <div class="slds-size_1-of-4 slds-p-around_x-small">
+                    <div class="slds-box slds-text-align_center">
+                        <lightning-carousel-image
+                            src={posterPath}
+                            header={name}
+                            description=""
+                            href="https://www.example.com">
+                        </lightning-carousel-image>
+                    </div>
+                </div>
+           
+        </div>
+    </template>
+
+    <template if:false={movieSelected}>
+        <div class="slds-grid slds-wrap">
+            <template for:each={movies} for:item="movie">
+                <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                    <div class="slds-box slds-text-align_center">
+                        <lightning-carousel-image
+                            src={movie.PosterUrl__c}
+                            header={movie.Name}
+                            description={movie.Release_Date__c}>
+                        </lightning-carousel-image>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

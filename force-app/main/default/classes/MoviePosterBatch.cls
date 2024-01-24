@@ -24,9 +24,7 @@ global class MoviePosterBatch implements Database.Batchable<SObject>, Database.A
                 Map<String, Object> jsonResponse = (Map<String, Object>)JSON.deserializeUntyped(response.getBody());
         
                 if (jsonResponse != null && jsonResponse.get('poster_path') != null) {
-                    String imageUrl = 'https://image.tmdb.org/t/p/original';
-                    System.debug('Poster Path: ' + (String)jsonResponse.get('poster_path'));
-        
+                    String imageUrl = 'https://image.tmdb.org/t/p/original';       
                     movie.PosterUrl__c = imageUrl + (String)jsonResponse.get('poster_path');
                     moviesToUpdate.add(movie);
                 } else {
@@ -35,14 +33,13 @@ global class MoviePosterBatch implements Database.Batchable<SObject>, Database.A
             } else {
                 System.debug('API Call failed for Movie Id: ' + movie.Id + '. Status Code: ' + response.getStatusCode());
             }
-        }
-        
+        }        
         update moviesToUpdate;
         
     }
     global void finish(Database.BatchableContext BC) {
         String nextBatchClassName = 'ActorPosterBatch';
-        Database.executeBatch((Database.Batchable<SObject>)Type.forName(nextBatchClassName).newInstance(), 5);
+        Database.executeBatch((Database.Batchable<SObject>)Type.forName(nextBatchClassName).newInstance(), 50);
     }
     
 }

@@ -1,0 +1,103 @@
+<template>
+ 
+    <!-- Below code will show dropdown picklist -->
+    <!--  -->
+    <lightning-card>
+        <lightning-card>
+           <div class="slds-text-heading_large slds-text-color_inverse slds-align_absolute-center" style="height:5rem;background:#16325c">The Movie Database</div>
+ 
+        </lightning-card>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-4 slds-p-around_x-small lgc-bg">
+                        <p>Select Genre</p>
+                        <lightning-button-menu alternative-text="Show menu" menu-alignment="auto" class="custom-dropdown-menu">
+                            <!-- <template if:true={showDropdown}> -->
+                                <lightning-checkbox-group name="Checkbox Group"
+                                              label="Checkbox Group"
+                                              options={genrePicklistvalues}
+                                              value={selectedGenreValue}
+                                              onchange={handleChange}
+                                              style="width: 250px;" >
+                                            </lightning-checkbox-group>
+                    <p>Selected Values are: {selectedValues}</p>
+                            <!-- </template> -->
+                        </lightning-button-menu>
+                    </div>
+ 
+                    <div class="slds-size_1-of-4 slds-p-top_x-small slds-p-around_x-small lgc-bg">
+                    <lightning-input type="toggle" label="All Selected Genres" name="input1" checked={isChecked} onchange={handleToggle}></lightning-input>
+                    </div>
+                    <div class="slds-size_1-of-4 slds-p-around_x-small">
+                        <p>Select Decade</p><lightning-button-menu alternative-text="Show menu">
+                            <template if:true={showDropdown}>
+                                <lightning-checkbox-group name="Checkbox Group"
+                                              label="Checkbox Group"
+                                              options={Decadevalues}
+                                              value={value}
+                                              onchange={handleChange}></lightning-checkbox-group>
+                    <p>Selected Values are: {selectedValues}</p>
+                            </template>
+                        </lightning-button-menu>
+                    </div>
+ 
+            <div class="slds-size_1-of-4 slds-p-bottom_medium slds-p-right_x-small">
+            <lightning-record-picker
+                label="Search Movies"
+                placeholder="Search Movies... "
+                object-api-name="Movie__c"
+                filter={filter}
+                matching-info={matchingInfo}
+                display-info={displayInfo}
+                message-when-bad-input="Select a movie"
+                value={selectedAccountId}
+                onchange={handleSelectedMovie}>
+            </lightning-record-picker>
+            </div>
+        </div>
+    </lightning-card>
+ 
+    <template lwc:if={showSelectedMovie}>
+        <div class="slds-grid slds-wrap">
+        <!-- <p>{selectedMovieDetails.Name}</p> -->
+    <lightning-card title="Selected Movie DataBase" style="height:1000px">
+                <div class="slds-size_1-of-4 slds-p-around_x-small">
+                    <div  class="slds-box slds-text-align_center">
+                            <lightning-carousel-image
+                                src={selectedMovieDetails.PosterPath__c}
+                                header={selectedMovieDetails.Name}
+                                alternative-text={selectedMovieDetails.Genres__c}
+                                description={selectedMovieDetails.Overview__c}
+                                href="https://www.example.com">
+                            </lightning-carousel-image>
+                            <p>Genres : {selectedMovieDetails.Genre__c}</p>
+                            <p>Release Date :{selectedMovieDetails.Release_Date__c}</p>
+                    </div>
+                </div>
+       
+    </lightning-card>
+</div>
+</template>
+ 
+    <template lwc:if={showAllMovies}>
+    <lightning-card title="All Movie" style="height:1000px">
+        <div class="slds-grid slds-wrap">
+            <template for:each={movieData} for:item="movie">
+                <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                    <div class="slds-box slds-text-align_center">
+                       
+                            <lightning-carousel-image
+                                src={movie.PosterPath__c}
+                                description={movie.Overview__c}
+                                header={movie.Name}
+                                alternative-text={movie.Genres__c}
+                                href="https://www.example.com">
+                            </lightning-carousel-image>
+                            <p>Genres : {movie.Genre__c}</p>
+                            <p>Release Date :{movie.Release_Date__c}</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>  
+</template>
