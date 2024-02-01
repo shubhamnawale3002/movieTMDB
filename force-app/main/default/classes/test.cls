@@ -1,39 +1,26 @@
 public with sharing class test {
-    @AuraEnabled(cacheable = true)
-    public static List<Movie__c> movieRecords(){
-      try {
-          return ([SELECT Id, Name, Tagline__c,TmdbId__c,Release_Date__c,genres__c,PosterUrl__c From Movie__c]);
-      } catch (Exception e) {
-          throw new AuraHandledException(e.getMessage());
-      }
-    }
-   
     @AuraEnabled(cacheable=true)
-    public static List<Movie__c> filteredMovies(String selectedDecade) {
-        try {
-            // Convert the input string to integer (decade year)
-            Integer startYear = Integer.valueOf(selectedDecade.split('-')[0]);
-            Integer endYear = Integer.valueOf(selectedDecade.split('-')[1]);
-   
-            // Query movies where the year part of Release_del__c falls within the selected decade
-            return [SELECT Id,Release_Date__c, Name, Tagline__c,TmdbId__c,genres__c,PosterUrl__c
-                    FROM Movie__c
-                    WHERE CALENDAR_YEAR(Release_Date__c) >= :startYear AND CALENDAR_YEAR(Release_Date__c) <= :endYear];
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
+    public static List<String> test1(String soslQuery) {
+        List<List<SObject>> searchResults = Search.query('FIND \'' + soslQuery + '\' IN Name FIELDS RETURNING Movie__c (Id), Actor__c (Id)');
+        List<Movie__c> moviedata = new List<Movie__c>();
+        List<Actor__c> actordata = new List<Actor__c>();
+        List<String> movieIds = new List<String>();
+
+
+            moviedata = (List<Movie__c>)searchResults[0];
+            List<Movie__c> moviesWithCastMembers = [SELECT Id, Name, PosterUrl__c FROM Movie__c WHERE Id IN :moviedata];
+            
+            for (Movie__c movie : moviesWithCastMembers) {
+                movieIds.add(movie.Id);
+            }
+
+            actordata = (List<Actor__c>)searchResults[1];
+            List<CastMembers__c> actorsWithCastMembers = [SELECT Movie__r.Id FROM CastMembers__c WHERE Actor__r.Id IN :actordata];
+            
+            for (CastMembers__c castMember : actorsWithCastMembers) {
+                movieIds.add(castMember.Movie__r.Id);
+            }
+
+        return movieIds;
     }
-   
-    // @AuraEnabled
-    // public static List<Movie__c> filtereGenresMovies(String genreValue){
-    //     try {
-    //         return [SELECT Id,Release_Date__c, Name, Tagline__c,TmdbId__c,genres__c,PosterUrl__c
-    //                 FROM Movie__c
-    //                 WHERE genres__c INCLUDES (:genreValue)];
-    //     } catch (Exception e) {
-    //         throw new AuraHandledException(e.getMessage());
-    //     }
-    // }
-   
-   
-  }
+}

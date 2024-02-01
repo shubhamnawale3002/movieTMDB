@@ -1,0 +1,56 @@
+<template>
+    <!-- <lightning-card>
+        <lightning-tabset>
+            <lightning-tab label="filter by genres">
+                <lightning-radio-group
+                name="radioGroup"
+                label="Condition"
+                options={options}
+                value={genreCondition}
+                onchange={handleConditionChange}
+                type="radio">
+            </lightning-radio-group>
+    
+            <div class="slds-grid slds-wrap">
+                <div class ="slds-size_4-of-12" style="display: flex; flex-wrap: wrap;">
+                <lightning-checkbox-group
+                    label="Select Genres"
+                    options={genrePicklistvalues}
+                    value={selectedGenreValue}
+                    onchange={handleGenreChange}>
+                </lightning-checkbox-group>
+            </div>
+            </div>
+            </lightning-tab>
+            <lightning-tab label="filter by decade" title="2nd tab extended title">
+                Two Content !
+            </lightning-tab>
+            <lightning-tab label="filter by search">
+                Three Content !
+            </lightning-tab>
+        </lightning-tabset>
+    </lightning-card> -->
+    <lightning-card>
+        <lightning-radio-group
+            name="radioGroup"
+            label="Condition"
+            options={options}
+            value={genreCondition}
+            onchange={handleConditionChange}
+            type="radio">
+        </lightning-radio-group>
+            <label class="slds-form-element__label">
+                Select Genres
+            </label>
+
+                <lightning-checkbox-group
+                    label="Select Genres"
+                    options={genrePicklistvalues}
+                    value={selectedGenreValue}
+                    onchange={handleGenreChange}
+                    variant="label-hidden"
+                    style="columns: 4;">
+                </lightning-checkbox-group>
+            
+    </lightning-card>
+</template>

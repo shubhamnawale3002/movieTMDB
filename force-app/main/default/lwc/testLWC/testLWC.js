@@ -1,99 +1,145 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
 import getMovies from '@salesforce/apex/MovieController.getAllMovies';
-import getActors from '@salesforce/apex/MovieController.getAllActors';
-import filteredMovies from '@salesforce/apex/MovieController.filteredMovies';
+import { getPicklistValues } from 'lightning/uiObjectInfoApi';
+import MOVIE_GENRE_FIELD from '@salesforce/schema/Movie__c.Movie_Genre__c';
+import filteredMoviesByDecade from '@salesforce/apex/MovieController.filteredMoviesByDecade';
+import filteredMoviesByGenres from "@salesforce/apex/MovieController.filteredMoviesByGenres";
+import getMovieByGenre from "@salesforce/apex/MovieController.getMoviesByGenres";
+import performSOSLQuery from '@salesforce/apex/MovieController.performSOSL';
+
 
 export default class TestLWC extends LightningElement {
+    @track activeAccordionSection;
     movies = [];
     actors = [];
-    selectedMovieId = null;
-    selectedActorId = null;
-    isChecked = false;
-    movieSelected = false;
-    selectMovieData = {};
-    selectActorData = {};
     selectedDecade;
-    posterPath;
-    name;
-
+    genrePicklistvalues;
+    genreCondition = 'Or';
+    selectedGenreValue = [];
+    filterByGenres = null;
+    filterByDecade = null;
+    allMovies =[];
+    showAllMovies = false;
+    searchMovies =[];
+    searchedMovies= null;
     connectedCallback() {
+        this.fetchMovies();
+    }
+    fetchMovies() {
+        this.showAllMovies = true;
         getMovies()
             .then(result => {
-                console.log(result);
                 this.movies = result;
-                console.log('Movies:', this.movies);
             })
             .catch(error => {
                 console.error(error);
             });
-
-        // Call the Apex method to get actors imperatively
-        getActors()
-            .then(result => {
-                console.log(result);
-                this.actors = result;
-            })
-            .catch(error => {
-                console.error(error);
-            });
-
+        }     
+    get options() {
+        return [
+            { label: 'AND', value: 'And' },
+            { label: 'OR', value: 'Or' },
+        ];
     }
 
-    loadMovies() {
-        filteredMovies({ selectedDecade: this.selectedDecade })
-            .then(result => {
-                console.log(result);
-                this.movies = result;
-                console.log(this.movies);
-            })
-            .catch(error => {
-                console.error(error);
-            });
+    @wire(getPicklistValues, {
+        recordTypeId: '012000000000000AAA',
+        fieldApiName: MOVIE_GENRE_FIELD
+    })
+    wiredGenreOptions({ data, error }) {
+        if (data) {
+            this.genrePicklistvalues = data.values.map(item => ({
+                label: item.label,
+                value: item.value
+            }));
+        } else if (error) {
+            console.error('Error fetching genre options:', error);
+        }
     }
 
-    handleToggle(event) {
-        console.log('came into handletoggle');
-        this.isChecked = event.target.checked;
+    handleConditionChange(event) {
+        this.genreCondition = event.detail.value;
+    }
+    
+    handleGenreChange(event) {
+        this.selectedGenreValue = event.detail.value;
+        this.activeAccordionSection = 'genresSection';
+        if (this.selectedGenreValue.length > 0) {
+            this.showAllMovies = false;
+            this.allSelectedGenres = this.selectedGenreValue.join(';');
+            this.handleAsyncOperation()
+                .then((result) => {
+                    this.filterByGenres = result;
+                    console.log('this.filterByGenres',this.filterByGenres);
+                })
+                .catch((error) => {
+                    console.error('Error fetching movie genres:', error);
+                });
+        } else {
+            this.showAllMovies = false;
+            this.filterByGenres = this.movies;
+        }
+    }
+
+    handleAsyncOperation() {
+        return new Promise((resolve, reject) => {
+            if (this.genreCondition === 'Or') {
+                filteredMoviesByGenres({ selectedGenres: this.allSelectedGenres })
+                    .then((result) => {
+                        this.filterByGenres = result;
+                        
+                        resolve(this.filterByGenres);
+                    })
+                    .catch((error) => {
+                        reject(error);
+                    });
+            } else if (this.genreCondition === 'And') {
+                getMovieByGenre({ selectedGenres: this.allSelectedGenres })
+                    .then((result) => {
+                        this.filterByGenres = result;
+                        resolve(this.filterByGenres);
+                    })
+                    .catch((error) => {
+                        reject(error);
+                    });
+            }
+        });
     }
 
     handleDecadeChange(event) {
-        console.log('Inside Decade Change');
         this.selectedDecade = event.detail.value;
-        this.loadMovies();
+        this.activeAccordionSection = 'decadeSection';
+        this.loadMovies();   
     }
 
-    handleSelectedRecord(event) {
-        const selectedRecordId = event.detail.recordId;
-        this.movieSelected = true;
-        console.log('>>>>>>>>>>..',selectedRecordId);
-        console.log(this.movieSelected);
-        const selectedMovie = this.movies.find(movie => movie.Id == selectedRecordId);
-        console.log('Selected Movie:', selectedMovie);
+    loadMovies() {
+        this.showAllMovies = false;
+        filteredMoviesByDecade({ selectedDecade: this.selectedDecade })
+            .then(result => {
+                this.filterByDecade = result;
+                console.log('this.filterByDecade ',this.filterByDecade);
+            })
+            .catch(error => {
+                console.error(error);
+            });
 
-        const selectedActor = this.actors.find(actor => actor.Id === selectedRecordId);
-        console.log('Selected Actor:', selectedActor);
-
-        if (selectedMovie) {
-            console.log('Selected Movie Data:', selectedMovie);
-            this.selectMovieData = selectedMovie;
-            this.posterPath = this.selectMovieData.PosterUrl__c;
-            this.name = this.selectMovieData.Name;
-            console.log('Movie found in the array:', this.selectMovieData.PosterUrl__c);
-        } else if (selectedActor) {
-            console.log('Selected Actor Data:', selectedActor);
-            this.selectActorData = selectedActor;
-            this.posterPath = this.selectActorData.CastPosterPath__c;
-            this.name = this.selectActorData.Name;
-            console.log('Actor found in the array:', this.selectActorData.CastPosterPath__c);
-        }
-        else{
-            this.movieSelected = false;
-        }
+        if (this.selectedDecade === '-1') {
+            getMovies()
+                .then(result => {
+                    this.showAllMovies = true;
+                    this.allMovies = result;
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        } 
     }
 
     get generateDecadeOptions() {
-        let decadeOptions = [];
-        for (let i = 1920; i <= 2009; i += 10) {
+        let decadeOptions = [
+            { label: 'Select Decade', value: '-1' }
+        ];
+        for (let i = 1940; i <= 2009; i += 10) {
             let startYear = i;
             let endYear = i + 9;
             let label = `${startYear}-${endYear}`;
@@ -101,5 +147,51 @@ export default class TestLWC extends LightningElement {
             decadeOptions.push({ label, value });
         }
         return decadeOptions;
+    }
+   
+    searchTerm = '';
+    handleSearchTermChange(event) {
+        this.searchTerm = event.target.value;
+        if(!this.searchTerm){
+            this.showAllMovies = true;
+        }else{
+            this.showAllMovies = false;
+        }
+    }
+    handleKeyPress(event) {
+        if (event.key === "Enter") {
+            this.handleSearch();
+        }
+    }
+    handleSearch() {
+        if (this.searchTerm) {
+            const soslQuery = `${this.searchTerm}`;
+            performSOSLQuery({ soslQuery })
+                .then(result => {
+                    
+                    this.searchMovies = result;
+                    this.searchedMovies = [];
+                    this.searchMovies.forEach(record => {
+                        if (record.Movie__r) {
+                            this.searchedMovies.push({
+                                Name: record.Movie__r.Name,
+                                PosterUrl: record.Movie__r.PosterUrl__c,
+                                ReleaseDate: record.Movie__r.Release_Date__c,
+                            });
+                        }
+                        else{
+                            this.searchedMovies.push({
+                                Id: record.Id,
+                                Name: record.Name,
+                                PosterUrl: record.PosterUrl__c,
+                                ReleaseDate: record.Release_Date__c,
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error performing SOSL query:', error);
+                });
+        }
     }
 }

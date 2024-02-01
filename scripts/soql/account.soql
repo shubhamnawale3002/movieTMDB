@@ -16,9 +16,17 @@ SELECT Id, VersionData FROM ContentVersion
 SELECT Id, Actor_ID__c, Name FROM Actor__c 
 
 
-SELECT Id,TmdbId__c, Name, Release_Date__c,genres__c,Tagline__c,PosterUrl__c FROM Movie__c Where Id ='a005g00003LsNudAAF'
+SELECT Id,TmdbId__c, Name, Release_Date__c,genres__c,Tagline__c,PosterUrl__c FROM Movie__c Where Id ='a005g00003NDIDTAA5'
 SELECT Id, Name, Release_Date__c FROM Movie__c WHERE Release_Date__c >= 1950
-SELECT Id,Name,(SELECT Actor__r.Id, Actor__r.Name,Actor__r.CastPosterPath__c FROM CastMembers__r)FROM Movie__c WHERE Id = 'a005g00003LsNudAAF'
-SELECT Id,Name, Release_Date__c,genres__c,Tagline__c,PosterUrl__c ,(SELECT Actor__r.Id, Actor__r.Name,Actor__r.CastPosterPath__c FROM CastMembers__r)FROM Movie__c
-
+SELECT Id,Name,(SELECT Actor__r.Id, Actor__r.Name,Actor__r.CastPosterPath__c FROM CastMembers__r)FROM Movie__c WHERE Id = 'a005g00003NDIDTAA5'
+SELECT Id,Name, (SELECT Actor__r.Id, Actor__r.Name FROM CastMembers__r)FROM Movie__c WHERE Id = 'a005g00003NDICtAAP'
+SELECT Id, Actor__r.Name FROM castMembers__c
 Select Id, Release_Date__c, Name, Tagline__c, TmdbId__c, genres__c, PosterUrl__c FROM Movie__c WHERE Calendar_year(Release_Date__c) >= 1950 AND Calendar_year(Release_Date__c) <= 1960
+
+
+FIND {a025g00000NPuX9AAL} IN ALL FIELDS RETURNING Account (Id, Name), Contact (Id, FirstName, LastName)
+
+
+SELECT Movie__r.Id, Movie__r.Name,Movie__r.PosterUrl__c, Movie__r.genres__c,Actor__r.Id, Actor__r.Name, Actor__r.CastPosterPath__c, CastName__c FROM CastMembers__c WHERE actor__r.name = 'shah rukh khan'
+
+SELECT  Movie__r.Name FROM CastMembers__c WHERE actor__r.Id IN ('a025g00000NQ30OAAT')

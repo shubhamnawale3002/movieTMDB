@@ -1,102 +1,139 @@
 <template>
-    <lightning-card title="The Movie DataBase">
-    <div class="slds-grid slds-gutters">
-        <div class="slds-col">
-            <lightning-accordion allow-multiple-sections-open>
-                <lightning-accordion-section name="genresSection" label="Filter By Genres">
-                </lightning-accordion-section>
-                <lightning-accordion-section name="decadeSection" label="Filter By Decade">
-                <lightning-combobox
-                    
-                    value={selectedDecade}
-                    class="statuscombobox"
-                    placeholder="Select Decade"
-                    options={generateDecadeOptions}
-                    onchange={handleDecadeChange}>
-                </lightning-combobox>
-            </lightning-accordion-section>
-        </lightning-accordion>
+    <lightning-card>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col"></div>
+            <div class="slds-col">
+                <lightning-input placeholder="Search Movie or Actor" value={searchTerm} onchange={handleSearchTermChange} onkeydown={handleKeyPress}></lightning-input>
+                <template if:true={showAllMovies}>
+                    <p>Total Movies: {movies.length}</p>
+                </template>
+                <template if:true={filterByGenres}>
+                    <p>Movies found by Genres: {filterByGenres.length}</p>
+                </template>
+                <template if:true={filterByDecade}>
+                    <p>Movies found by Decade: {filterByDecade.length}</p>
+                </template>
+                <template if:true={searchedMovies}>
+                    <p>Movies found by Search: {searchedMovies.length}</p>
+                </template>
+            </div>
+            <div class="slds-col slds-col_bump-left">
+            </div>
         </div>
-        <div class="slds-col">
-        </div>
-        <div class="slds-col">
-           
-        </div>
-        <div class="slds-col">
-        </div>
-        <div class="slds-col slds-grid slds-align_absolute-left" style="height:5rem">
-            <template if:false={isChecked}>
-                <lightning-record-picker
-                    label="Search"
-                    placeholder="Search..."
-                    object-api-name="Movie__c"
-                    onchange={handleSelectedRecord}
-                    message-when-bad-input="Select a Movie"
-                    value={selectedMovieId}>
-                </lightning-record-picker>
-            </template>
-            <template if:true={isChecked}>
-                <lightning-record-picker
-                    label="Search"
-                    placeholder="Search..."
-                    object-api-name="Actor__c"
-                    onchange={handleSelectedRecord}
-                    message-when-bad-input="Select an Actor"
-                    value={selectedActorId}>
-                </lightning-record-picker>
-            </template>
-        </div>
-    </div>
-    <div class="slds-grid slds-gutters">
-        <div class="slds-col">
-        </div>
-        <div class="slds-col">
-        </div>
-        <div class="slds-col">
-        </div>
-        <div class="slds-col">
-            <label class="slds-checkbox_toggle slds-grid">
-                <input type="checkbox" name="checkbox" id="toggle" onchange={handleToggle} checked={isChecked} />
-                <span class="slds-checkbox_faux_container" aria-live="assertive">
-                    <span class="slds-checkbox_faux"></span>
-                    <span class="slds-checkbox_on">Actor</span>
-                    <span class="slds-checkbox_off">Movie</span>
-                </span>
-            </label>
-        </div>
-    </div>
-</lightning-card>
-
-    <template if:true={movieSelected}>
-        <div class="slds-grid slds-wrap">
-            
-                <div class="slds-size_1-of-4 slds-p-around_x-small">
-                    <div class="slds-box slds-text-align_center">
-                        <lightning-carousel-image
-                            src={posterPath}
-                            header={name}
-                            description=""
-                            href="https://www.example.com">
-                        </lightning-carousel-image>
+        <lightning-tabset>
+            <lightning-tab label="Filter by Genres">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-4">
+                        <h1>Condition</h1>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4">
+                        <lightning-radio-group name="radioGroup"
+                            options={options}
+                            value={genreCondition}
+                            onchange={handleConditionChange}
+                            type="radio"
+                            style="columns: 2;">
+                        </lightning-radio-group>
                     </div>
                 </div>
-           
-        </div>
-    </template>
-
-    <template if:false={movieSelected}>
-        <div class="slds-grid slds-wrap">
-            <template for:each={movies} for:item="movie">
-                <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
-                    <div class="slds-box slds-text-align_center">
-                        <lightning-carousel-image
-                            src={movie.PosterUrl__c}
-                            header={movie.Name}
-                            description={movie.Release_Date__c}>
-                        </lightning-carousel-image>
+                <br/>
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-4">
+                        <h1>Select genres</h1>
+                    </div>
+                    <div class="slds-col slds-size_3-of-4">
+                        <lightning-checkbox-group
+                                options={genrePicklistvalues}
+                                value={selectedGenreValue}
+                                onchange={handleGenreChange}
+                                variant="label-hidden"
+                                style="columns: 4;">
+                        </lightning-checkbox-group>
                     </div>
                 </div>
-            </template>
-        </div>
-    </template>
+            </lightning-tab>
+            <lightning-tab label="Filter by Decade">
+                <!-- Decade Filters -->
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-4">
+                        <h1>Select Decade</h1>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4">
+                        <lightning-combobox
+                            value={selectedDecade}
+                            class="statuscombobox"
+                            placeholder="Select Decade"
+                            options={generateDecadeOptions}
+                            onchange={handleDecadeChange}>
+                        </lightning-combobox>
+                    </div>
+                </div>
+            </lightning-tab>
+        </lightning-tabset>
+
+        <!-- Movie Display Section -->
+        <template if:true={showAllMovies}>
+            <div class="slds-grid slds-wrap">
+                <template for:each={movies} for:item="movie">
+                    <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                        <div class="slds-box slds-text-align_center">
+                            <lightning-carousel-image
+                                src={movie.PosterUrl__c}
+                                header={movie.Name}
+                                description={movie.Release_Date__c}>
+                            </lightning-carousel-image>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template if:true={filterByGenres}>
+            <div class="slds-grid slds-wrap">
+                <template for:each={filterByGenres} for:item="movie">
+                    <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                        <div class="slds-box slds-text-align_center">
+                            <lightning-carousel-image
+                                src={movie.PosterUrl__c}
+                                header={movie.Name}
+                                description={movie.Movie_Genre__c}
+                                href="https://www.example.com">
+                            </lightning-carousel-image>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template if:true={filterByDecade}>
+            <div class="slds-grid slds-wrap">
+                <template for:each={filterByDecade} for:item="movie">
+                    <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                        <div class="slds-box slds-text-align_center">
+                            <lightning-carousel-image
+                                src={movie.PosterUrl__c}
+                                header={movie.Name}
+                                description={movie.Release_Date__c}
+                                href="https://www.example.com">
+                            </lightning-carousel-image>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template if:true={searchedMovies}>
+            <div class="slds-grid slds-wrap">
+                <template for:each={searchedMovies} for:item="movie">
+                    <div key={movie.Id} class="slds-size_1-of-4 slds-p-around_x-small">
+                        <div class="slds-box slds-text-align_center" onclick={navigateToRecordPage} data-record-id={movie.Id}>
+                            <lightning-carousel-image
+                                src={movie.PosterUrl}
+                                header={movie.Name}
+                                description={movie.ReleaseDate}
+                                href="javascript:void(0);">
+                            </lightning-carousel-image>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </lightning-card>
 </template>

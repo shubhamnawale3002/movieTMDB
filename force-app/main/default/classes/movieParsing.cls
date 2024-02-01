@@ -13,11 +13,11 @@ public class movieParsing {
         public Integer runtimeMinutes;
         public String status;
         public String tagline;
-        public List<Genre> genres;
+        public List<Genres> genres;
         public List<CastMember> castMembers;
 
         public Movie() {
-            genres = new List<Genre>();
+            genres = new List<Genres>();
             castMembers = new List<CastMember>();
         }
     }
@@ -33,7 +33,7 @@ public class movieParsing {
         public String profilePath;
     }
 
-    public class Genre {
+    public class Genres {
         public String name;
     }
     public static void insertRecords() {
@@ -47,6 +47,11 @@ public class movieParsing {
         List<Movie> movies = (List<Movie>) JSON.deserialize(jsonString, List<Movie>.class);
 
         if (movies != null && !movies.isEmpty()) {
+            List<String> picklistValues = getPicklistValues('Movie__c', 'Movie_Genre__c');
+        Set<String> lowercasePicklistValues = new Set<String>();
+        for (String picklistValue : picklistValues) {
+            lowercasePicklistValues.add(picklistValue.toLowerCase());
+        }
             for (Movie movieData : movies) {
                 Movie__c movieRecord = new Movie__c(
                     TmdbId__c = movieData.tmdbId,
@@ -54,7 +59,7 @@ public class movieParsing {
                     Overview__c = movieData.overview,
                     Release_Date__c = Date.valueOf(movieData.releaseDate),
                     Runtime_Minutes__c = movieData.runtimeMinutes,
-                    Genres__c = getGenresAsString(movieData.genres),
+                    Movie_Genre__c = getGenresAsString(movieData.genres, lowercasePicklistValues),
                     Tagline__c = movieData.tagline
                 );
 
@@ -130,7 +135,17 @@ public class movieParsing {
 
         Database.executeBatch(new MoviePosterBatch(), 200);
     }
+    
 
+    private static List<String> getPicklistValues(String objectApiName, String fieldApiName) {
+        List<String> picklistValues = new List<String>();
+        Schema.DescribeFieldResult fieldResult = Schema.getGlobalDescribe().get(objectApiName).getDescribe().fields.getMap().get(fieldApiName).getDescribe();
+        List<Schema.PicklistEntry> picklistEntries = fieldResult.getPicklistValues();
+        for (Schema.PicklistEntry entry : picklistEntries) {
+            picklistValues.add(entry.getValue());
+        }
+        return picklistValues;
+    }
     private static Actor__c findExistingActor(String actorName) {
         for (Actor__c existingActor : actorRecords) {
             if (existingActor.name.equals(actorName)) {
@@ -140,14 +155,14 @@ public class movieParsing {
         return null;
     }
 
-    private static String getGenresAsString(List<Genre> genres) {
-        if (genres != null && !genres.isEmpty()) {
-            List<String> genreNames = new List<String>();
-            for (Genre genre : genres) {
-                genreNames.add(genre.name);
+    public static String getGenresAsString(List<Genres> genresList, set<String> lowercasePicklistValues) {
+        List<String> genreNames = new List<String>();
+        for (Genres genre : genresList) {
+            String genreName=genre.name.trim();
+            if (lowercasePicklistValues.contains(genreName.toLowerCase())) {
+                genreNames.add(genreName);
             }
-            return String.join(genreNames, ';');
         }
-        return null;
+        return String.join(genreNames, ';');
     }
 }
